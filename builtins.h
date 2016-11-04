@@ -1,9 +1,4 @@
-//
-// Created by csyezheng on 11/3/16.
-//
-
-#ifndef BUILTINS_H
-#define BUILTINS_H
+#pragma once
 
 #include <cstdlib>
 #include <iostream>
@@ -62,6 +57,3 @@ int pipeAndFrd(vector<string> tokens);
 
 // Run commands in background.
 int runBackground(vector<string> &tokens);
-
-
-#endif

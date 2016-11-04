@@ -1,15 +1,11 @@
-//
-// Created by csyezheng on 11/3/16.
-//
-
 #include "builtins.h"
 #include <map>
-//  #include <readline/history.h>
+#include <readline/history.h>
 
 using namespace std;
 
 vector<string> event_list;
-map<string, string> alias_list;
+map<string, vector<string> > alias_list;
 
 int com_ls(vector<string> &tokens)
 {
@@ -50,51 +46,75 @@ int com_cd(vector<string> &tokens)
 
 int com_pwd(vector<string> &tokens)
 {
+    // HINT: you should implement the actual fetching of the current directory in
+    // pwd(), since this information is also used for your prompt
+    // cout << "pwd called" << pwd() << endl; // delete when implemented
     cout << pwd() << endl;
     return 0;
 }
 
 int com_alias(vector<string> &tokens)
 {
-    if (tokens.size() == 1)                         // List all aliases
+    // List all aliases if the size of tokesn is 1.
+    // Map iterator for the alias_list
+    map<string, vector<string> >::iterator iter;
+
+    if (tokens.size() == 1)
     {
-        for (auto iter = alias_list.begin(); iter != alias_list.end(); iter++)
+        for (iter = alias_list.begin(); iter != alias_list.end(); iter++)
         {
-            cout << "alias " << iter->first << "='" << iter->second << "'" << endl;
+            string value = "";
+            // Build the command from the vector.
+            for (vector<string>::iterator vectorIter = iter->second.begin();
+                 vectorIter != iter->second.end(); vectorIter++)
+            {
+                value += *vectorIter + " ";
+            }
+            // Remove the last space.
+            value = value.substr(0, value.length() - 1);
+
+            cout << "alias " << iter->first << "='" << value << "'" << endl;
         }
     }
-    else                                           // Add the alias to the alias list.
+    else
     {
+        // Add the alias to the alias list.
         string key = tokens[1].substr(0, tokens[1].find("="));
         string cmd = tokens[1].substr(tokens[1].find("=") + 1, tokens[1].length());
-        alias_list[key] = cmd;
+        vector<string> tmp;
+
+        tmp.push_back(cmd);
+
+        for (int i = 2; i < tokens.size(); i++)
+        {
+            tmp.push_back(tokens[i]);
+        }
+
+        alias_list[key] = tmp;
+        tmp.clear();
     }
     return 0;
 }
 
-int com_unalias(vector<string> &tokens)                     // Remove the alias
+int com_unalias(vector<string> &tokens)
 {
-    if (tokens.size() < 2)
+    // Remove the key.
+    if (tokens.size() > 2)
     {
-        cout << "Unalias usage: unalias [-a] name..." << endl;
+        cout << "Unalias can't contain both -a and an alias name." << endl;
         return 1;
     }
     else
     {
         if (tokens[1] == "-a")
         {
+            // Clear the alias_list contents.
             alias_list.clear();
         }
         else
         {
-            for (auto iter = tokens.begin() + 1; iter != tokens.end(); ++iter)
-            {
-                auto ret = alias_list.find(*iter);
-                if (ret != alias_list.end())
-                    alias_list.erase(*iter);
-                else
-                    cout << "bash: unalias: " << *iter << ": not found" << endl;
-            }
+            // Erase the key from the alias_list.
+            alias_list.erase(tokens[1]);
         }
     }
     return 0;
@@ -126,6 +146,10 @@ int com_history(vector<string> &tokens)
     }
     return 0;
 }
+
+// update the history list
+void update_history(string command)
+{ event_list.push_back(command); }
 
 string pwd()
 {
